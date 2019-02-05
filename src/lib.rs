@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![no_std]
+
 use embedded_hal::digital::OutputPin;
 
 pub enum Color {
