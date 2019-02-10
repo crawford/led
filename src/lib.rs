@@ -14,77 +14,12 @@
 
 #![no_std]
 
-use embedded_hal::digital::OutputPin;
+pub mod rgb;
 
-pub enum Color {
-    Red,
-    Green,
-    Blue,
-    Yellow,
-    Cyan,
-    Magenta,
-    White,
-    Black,
-}
+/// LED represents an LED that can be set to several states.
+pub trait LED {
+    type Input;
 
-pub struct RGB<R, G, B> {
-    red: R,
-    green: G,
-    blue: B,
-}
-
-impl<R, G, B> RGB<R, G, B>
-where
-    R: OutputPin,
-    G: OutputPin,
-    B: OutputPin,
-{
-    pub fn new(red: R, green: G, blue: B) -> RGB<R, G, B> {
-        RGB { red, green, blue }
-    }
-
-    pub fn set_color(&mut self, color: Color) {
-        match color {
-            Color::Red => {
-                self.red.set_low();
-                self.green.set_high();
-                self.blue.set_high();
-            }
-            Color::Green => {
-                self.red.set_high();
-                self.green.set_low();
-                self.blue.set_high();
-            }
-            Color::Blue => {
-                self.red.set_high();
-                self.green.set_high();
-                self.blue.set_low();
-            }
-            Color::Yellow => {
-                self.red.set_low();
-                self.green.set_low();
-                self.blue.set_high();
-            }
-            Color::Cyan => {
-                self.red.set_high();
-                self.green.set_low();
-                self.blue.set_low();
-            }
-            Color::Magenta => {
-                self.red.set_low();
-                self.green.set_high();
-                self.blue.set_low();
-            }
-            Color::White => {
-                self.red.set_low();
-                self.green.set_low();
-                self.blue.set_low();
-            }
-            Color::Black => {
-                self.red.set_high();
-                self.green.set_high();
-                self.blue.set_high();
-            }
-        }
-    }
+    /// Sets an LED to a particular state.
+    fn set(&mut self, value: Self::Input);
 }
