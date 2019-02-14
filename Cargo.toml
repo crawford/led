@@ -1,6 +1,6 @@
 [package]
 name = "led"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Alex Crawford <led@code.acrawford.com>"]
 edition = "2018"
 description = "Various LED implementations built on the embedded-hal traits"
