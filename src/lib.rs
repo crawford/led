@@ -14,6 +14,7 @@
 
 #![no_std]
 
+pub mod alphanumeric;
 pub mod rgb;
 
 /// Represents an LED that can be set to several states
