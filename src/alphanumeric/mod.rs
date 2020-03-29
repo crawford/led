@@ -15,6 +15,10 @@
 #[macro_use]
 mod font;
 
+#[cfg(feature = "ascii")]
+use ascii::AsciiChar;
+#[cfg(feature = "ascii")]
+use core::convert::From;
 use core::convert::TryFrom;
 use core::fmt;
 use embedded_hal::digital::OutputPinMatrix;
@@ -124,6 +128,16 @@ impl TryFrom<char> for Character {
             })
         } else {
             Err(Error::NonAscii)
+        }
+    }
+}
+
+#[cfg(feature = "ascii")]
+impl From<AsciiChar> for Character {
+    fn from(a: AsciiChar) -> Character {
+        Character {
+            base: a as u8,
+            point: false,
         }
     }
 }

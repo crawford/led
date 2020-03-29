@@ -10,5 +10,6 @@ license = "Apache-2.0"
 repository = "https://github.com/crawford/led"
 
 [dependencies]
+ascii = { version = "1.0.0", default-features = false, optional = true }
 embedded-hal = { git = "https://github.com/crawford/embedded-hal", branch = "matrix" }
 ignore-result = "0.2.0"
