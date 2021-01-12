@@ -24,8 +24,8 @@
 //! # struct Pin {}
 //! #
 //! # impl OutputPin for Pin {
-//! #     fn set_low(&mut self){}
-//! #     fn set_high(&mut self){}
+//! #     fn try_set_low(&mut self){}
+//! #     fn try_set_high(&mut self){}
 //! # }
 //! #
 //! # let r = Pin{};
@@ -46,8 +46,8 @@
 //! # struct Pin {}
 //! #
 //! # impl OutputPin for Pin {
-//! #     fn set_low(&mut self){}
-//! #     fn set_high(&mut self){}
+//! #     fn try_set_low(&mut self){}
+//! #     fn try_set_high(&mut self){}
 //! # }
 //! #
 //! # let r1 = Pin{};
@@ -72,6 +72,7 @@
 
 use core::marker::PhantomData;
 use embedded_hal::digital::OutputPin;
+use ignore_result::Ignore;
 
 /// The set of primary colors and secondary colors that can be created by an RGB LED along with
 /// black and white.
@@ -102,8 +103,8 @@ pub type CommonCathodeLED<R, G, B> = LED<CommonCathode, R, G, B>;
 /// # struct Pin {}
 /// #
 /// # impl OutputPin for Pin {
-/// #     fn set_low(&mut self){}
-/// #     fn set_high(&mut self){}
+/// #     fn try_set_low(&mut self){}
+/// #     fn try_set_high(&mut self){}
 /// # }
 /// #
 /// # let r1 = Pin{};
@@ -232,8 +233,8 @@ pub trait Common {
 /// # struct Pin {}
 /// #
 /// # impl OutputPin for Pin {
-/// #     fn set_low(&mut self) {}
-/// #     fn set_high(&mut self) {}
+/// #     fn try_set_low(&mut self) {}
+/// #     fn try_set_high(&mut self) {}
 /// # }
 /// #
 /// # let r = Pin{};
@@ -258,8 +259,8 @@ pub struct CommonAnode {
 /// # struct Pin {}
 /// #
 /// # impl OutputPin for Pin {
-/// #     fn set_low(&mut self) {}
-/// #     fn set_high(&mut self) {}
+/// #     fn try_set_low(&mut self) {}
+/// #     fn try_set_high(&mut self) {}
 /// # }
 /// #
 /// # let r = Pin{};
@@ -276,20 +277,20 @@ pub struct CommonCathode {
 
 impl Common for CommonAnode {
     fn enable<P: OutputPin>(pin: &mut P) {
-        pin.set_low();
+        pin.try_set_low().ignore();
     }
 
     fn disable<P: OutputPin>(pin: &mut P) {
-        pin.set_high();
+        pin.try_set_high().ignore();
     }
 }
 
 impl Common for CommonCathode {
     fn enable<P: OutputPin>(pin: &mut P) {
-        pin.set_high();
+        pin.try_set_high().ignore();
     }
 
     fn disable<P: OutputPin>(pin: &mut P) {
-        pin.set_low();
+        pin.try_set_low().ignore();
     }
 }
