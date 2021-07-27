@@ -16,8 +16,9 @@
 
 pub mod rgb;
 
-/// Represents an LED that can be set to several states
+/// Represents an LED that can be set to one of several states.
 pub trait LED {
+    /// Type representing the states of the LED
     type Input;
 
     /// Sets the LED to the specified state.

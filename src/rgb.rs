@@ -60,13 +60,13 @@
 //! use led::LED;
 //! use led::rgb::{Color, CommonAnodeLED, CommonCathodeLED, RGB};
 //!
-//! let mut leds: [&mut RGB; 2] = [
+//! let mut leds: [&mut dyn RGB; 2] = [
 //!     &mut CommonAnodeLED::new(r1, g1, b1),
 //!     &mut CommonCathodeLED::new(r2, g2, b2),
 //! ];
 //!
 //! for led in leds.iter_mut() {
-//!     led.set(Color::Red)
+//!     led.set(Color::Red);
 //! }
 //! ```
 
@@ -115,13 +115,13 @@ pub type CommonCathodeLED<R, G, B> = LED<CommonCathode, R, G, B>;
 /// #
 /// use led::rgb::{Color, CommonAnodeLED, CommonCathodeLED, RGB};
 ///
-/// let mut leds: [&mut RGB; 2] = [
+/// let mut leds: [&mut dyn RGB; 2] = [
 ///     &mut CommonAnodeLED::new(r1, g1, b1),
 ///     &mut CommonCathodeLED::new(r2, g2, b2),
 /// ];
 ///
 /// for led in leds.iter_mut() {
-///     led.set(Color::Red)
+///     led.set(Color::Red);
 /// }
 /// ```
 pub trait RGB: crate::LED<Input = Color> {}
