@@ -32,10 +32,10 @@
 //! # let g = Pin{};
 //! # let b = Pin{};
 //! #
-//! use led::LED;
-//! use led::rgb::{Color, CommonAnodeLED};
+//! use led::Led;
+//! use led::rgb::{Color, CommonAnodeLed};
 //!
-//! let mut led = CommonAnodeLED::new(r, g, b);
+//! let mut led = CommonAnodeLed::new(r, g, b);
 //!
 //! led.set(Color::Green);
 //! ```
@@ -57,12 +57,12 @@
 //! # let g2 = Pin{};
 //! # let b2 = Pin{};
 //! #
-//! use led::LED;
-//! use led::rgb::{Color, CommonAnodeLED, CommonCathodeLED, RGB};
+//! use led::Led;
+//! use led::rgb::{Color, CommonAnodeLed, CommonCathodeLed, Rgb};
 //!
-//! let mut leds: [&mut dyn RGB; 2] = [
-//!     &mut CommonAnodeLED::new(r1, g1, b1),
-//!     &mut CommonCathodeLED::new(r2, g2, b2),
+//! let mut leds: [&mut dyn Rgb; 2] = [
+//!     &mut CommonAnodeLed::new(r1, g1, b1),
+//!     &mut CommonCathodeLed::new(r2, g2, b2),
 //! ];
 //!
 //! for led in leds.iter_mut() {
@@ -87,10 +87,10 @@ pub enum Color {
 }
 
 /// A common anode LED.
-pub type CommonAnodeLED<R, G, B> = LED<CommonAnode, R, G, B>;
+pub type CommonAnodeLed<R, G, B> = Led<CommonAnode, R, G, B>;
 
 /// A common cathode LED.
-pub type CommonCathodeLED<R, G, B> = LED<CommonCathode, R, G, B>;
+pub type CommonCathodeLed<R, G, B> = Led<CommonCathode, R, G, B>;
 
 /// An RGB LED; either common anode or common cathode.
 ///
@@ -113,33 +113,33 @@ pub type CommonCathodeLED<R, G, B> = LED<CommonCathode, R, G, B>;
 /// # let g2 = Pin{};
 /// # let b2 = Pin{};
 /// #
-/// use led::rgb::{Color, CommonAnodeLED, CommonCathodeLED, RGB};
+/// use led::rgb::{Color, CommonAnodeLed, CommonCathodeLed, Rgb};
 ///
-/// let mut leds: [&mut dyn RGB; 2] = [
-///     &mut CommonAnodeLED::new(r1, g1, b1),
-///     &mut CommonCathodeLED::new(r2, g2, b2),
+/// let mut leds: [&mut dyn Rgb; 2] = [
+///     &mut CommonAnodeLed::new(r1, g1, b1),
+///     &mut CommonCathodeLed::new(r2, g2, b2),
 /// ];
 ///
 /// for led in leds.iter_mut() {
 ///     led.set(Color::Red);
 /// }
 /// ```
-pub trait RGB: crate::LED<Input = Color> {}
-impl<L> RGB for L where L: crate::LED<Input = Color> {}
+pub trait Rgb: crate::Led<State = Color> {}
+impl<L> Rgb for L where L: crate::Led<State = Color> {}
 
 /// An RGB LED
 ///
 /// The RGB LED is represented by three owned instances of `embedded_hal::digital::OutputPin` and a
 /// polarity (common anode or common cathode). Because the outputs are binary, only eight colors
 /// can be presented: primary colors, secondary colors, white, and black.
-pub struct LED<C, R, G, B> {
+pub struct Led<C, R, G, B> {
     common: PhantomData<C>,
     red: R,
     green: G,
     blue: B,
 }
 
-impl<C, R, G, B> LED<C, R, G, B>
+impl<C, R, G, B> Led<C, R, G, B>
 where
     C: Common,
     R: OutputPin,
@@ -147,8 +147,8 @@ where
     B: OutputPin,
 {
     /// Creates a new RGB LED given three GPIOs.
-    pub fn new(red: R, green: G, blue: B) -> LED<C, R, G, B> {
-        LED {
+    pub fn new(red: R, green: G, blue: B) -> Led<C, R, G, B> {
+        Led {
             common: PhantomData,
             red,
             green,
@@ -157,14 +157,14 @@ where
     }
 }
 
-impl<C, R, G, B> crate::LED for LED<C, R, G, B>
+impl<C, R, G, B> crate::Led for Led<C, R, G, B>
 where
     C: Common,
     R: OutputPin,
     G: OutputPin,
     B: OutputPin,
 {
-    type Input = Color;
+    type State = Color;
 
     /// Sets the RGB LED to the specified color.
     fn set(&mut self, color: Color) {
@@ -240,9 +240,9 @@ pub trait Common {
 /// # let g = Pin{};
 /// # let b = Pin{};
 /// #
-/// use led::rgb::{CommonAnode, LED};
+/// use led::rgb::{CommonAnode, Led};
 ///
-/// let led: LED<CommonAnode, _, _, _> = LED::new(r, g, b);
+/// let led: Led<CommonAnode, _, _, _> = Led::new(r, g, b);
 /// ```
 pub struct CommonAnode {
     private: PhantomData<()>,
@@ -266,9 +266,9 @@ pub struct CommonAnode {
 /// # let g = Pin{};
 /// # let b = Pin{};
 /// #
-/// use led::rgb::{CommonCathode, LED};
+/// use led::rgb::{CommonCathode, Led};
 ///
-/// let led: LED<CommonCathode, _, _, _> = LED::new(r, g, b);
+/// let led: Led<CommonCathode, _, _, _> = Led::new(r, g, b);
 /// ```
 pub struct CommonCathode {
     private: PhantomData<()>,

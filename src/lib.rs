@@ -17,10 +17,10 @@
 pub mod rgb;
 
 /// Represents an LED that can be set to one of several states.
-pub trait LED {
+pub trait Led {
     /// Type representing the states of the LED
-    type Input;
+    type State;
 
     /// Sets the LED to the specified state.
-    fn set(&mut self, value: Self::Input);
+    fn set(&mut self, state: Self::State);
 }
