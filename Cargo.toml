@@ -10,4 +10,4 @@ license = "Apache-2.0"
 repository = "https://github.com/crawford/led"
 
 [dependencies]
-embedded-hal = "^0.2.0"
+embedded-hal = "0.2.3"

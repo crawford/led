@@ -19,13 +19,17 @@
 //! # Examples
 //!
 //! ```
-//! # use embedded_hal::digital::OutputPin;
+//! # use embedded_hal::digital::v2::OutputPin;
 //! #
 //! # struct Pin {}
 //! #
 //! # impl OutputPin for Pin {
-//! #     fn set_low(&mut self){}
-//! #     fn set_high(&mut self){}
+//! #     fn set_low(&mut self) -> Result<(), ()> {
+//! #         Ok(())
+//! #     }
+//! #     fn set_high(&mut self) -> Result<(), ()> {
+//! #         Ok(())
+//! #     }
 //! # }
 //! #
 //! # let r = Pin{};
@@ -41,13 +45,17 @@
 //! ```
 //!
 //! ```
-//! # use embedded_hal::digital::OutputPin;
+//! # use embedded_hal::digital::v2::OutputPin;
 //! #
 //! # struct Pin {}
 //! #
 //! # impl OutputPin for Pin {
-//! #     fn set_low(&mut self){}
-//! #     fn set_high(&mut self){}
+//! #     fn set_low(&mut self) -> Result<(), ()> {
+//! #         Ok(())
+//! #     }
+//! #     fn set_high(&mut self) -> Result<(), ()> {
+//! #         Ok(())
+//! #     }
 //! # }
 //! #
 //! # let r1 = Pin{};
@@ -71,7 +79,7 @@
 //! ```
 
 use core::marker::PhantomData;
-use embedded_hal::digital::OutputPin;
+use embedded_hal::digital::v2::OutputPin;
 
 /// The set of primary colors and secondary colors that can be created by an RGB LED along with
 /// black and white.
@@ -88,23 +96,27 @@ pub enum Color {
 }
 
 /// A common anode LED.
-pub type CommonAnodeLED<R, G, B> = LED<CommonAnode, R, G, B>;
+pub type CommonAnodeLED<R, G, B, E> = LED<CommonAnode, R, G, B, E>;
 
 /// A common cathode LED.
-pub type CommonCathodeLED<R, G, B> = LED<CommonCathode, R, G, B>;
+pub type CommonCathodeLED<R, G, B, E> = LED<CommonCathode, R, G, B, E>;
 
 /// An RGB LED; either common anode or common cathode.
 ///
 /// # Examples
 ///
 /// ```
-/// # use embedded_hal::digital::OutputPin;
+/// # use embedded_hal::digital::v2::OutputPin;
 /// #
 /// # struct Pin {}
 /// #
 /// # impl OutputPin for Pin {
-/// #     fn set_low(&mut self){}
-/// #     fn set_high(&mut self){}
+/// #     fn set_low(&mut self) -> Result<(), ()> {
+/// #         Ok(())
+/// #     }
+/// #     fn set_high(&mut self) -> Result<(), ()> {
+/// #         Ok(())
+/// #     }
 /// # }
 /// #
 /// # let r1 = Pin{};
@@ -130,25 +142,31 @@ impl<L> RGB for L where L: crate::LED<Input = Color> {}
 
 /// An RGB LED
 ///
-/// The RGB LED is represented by three owned instances of `embedded_hal::digital::OutputPin` and a
-/// polarity (common anode or common cathode). Because the outputs are binary, only eight colors
-/// can be presented: primary colors, secondary colors, white, and black.
-pub struct LED<C, R, G, B> {
+/// The RGB LED is represented by three owned instances of `embedded_hal::digital::v2::OutputPin`
+/// and a polarity (common anode or common cathode). Because the outputs are binary, only eight
+/// colors can be presented: primary colors, secondary colors, white, and black.
+pub struct LED<C, R, G, B, E>
+where
+    C: Common,
+    R: OutputPin<Error = E>,
+    G: OutputPin<Error = E>,
+    B: OutputPin<Error = E>,
+{
     common: PhantomData<C>,
     red: R,
     green: G,
     blue: B,
 }
 
-impl<C, R, G, B> LED<C, R, G, B>
+impl<C, R, G, B, E> LED<C, R, G, B, E>
 where
     C: Common,
-    R: OutputPin,
-    G: OutputPin,
-    B: OutputPin,
+    R: OutputPin<Error = E>,
+    G: OutputPin<Error = E>,
+    B: OutputPin<Error = E>,
 {
     /// Creates a new RGB LED given three GPIOs.
-    pub fn new(red: R, green: G, blue: B) -> LED<C, R, G, B> {
+    pub fn new(red: R, green: G, blue: B) -> LED<C, R, G, B, E> {
         LED {
             common: PhantomData,
             red,
@@ -156,71 +174,78 @@ where
             blue,
         }
     }
+
+    /// Sets the RGB LED to the specified color.
+    fn set(&mut self, color: Color) -> Result<(), <R as OutputPin>::Error> {
+        match color {
+            Color::Red => {
+                C::enable(&mut self.red)?;
+                C::disable(&mut self.green)?;
+                C::disable(&mut self.blue)?;
+            }
+            Color::Green => {
+                C::disable(&mut self.red)?;
+                C::enable(&mut self.green)?;
+                C::disable(&mut self.blue)?;
+            }
+            Color::Blue => {
+                C::disable(&mut self.red)?;
+                C::disable(&mut self.green)?;
+                C::enable(&mut self.blue)?;
+            }
+            Color::Yellow => {
+                C::enable(&mut self.red)?;
+                C::enable(&mut self.green)?;
+                C::disable(&mut self.blue)?;
+            }
+            Color::Cyan => {
+                C::disable(&mut self.red)?;
+                C::enable(&mut self.green)?;
+                C::enable(&mut self.blue)?;
+            }
+            Color::Magenta => {
+                C::enable(&mut self.red)?;
+                C::disable(&mut self.green)?;
+                C::enable(&mut self.blue)?;
+            }
+            Color::White => {
+                C::enable(&mut self.red)?;
+                C::enable(&mut self.green)?;
+                C::enable(&mut self.blue)?;
+            }
+            Color::Black => {
+                C::disable(&mut self.red)?;
+                C::disable(&mut self.green)?;
+                C::disable(&mut self.blue)?;
+            }
+        }
+
+        Ok(())
+    }
 }
 
-impl<C, R, G, B> crate::LED for LED<C, R, G, B>
+impl<C, R, G, B, E> crate::LED for LED<C, R, G, B, E>
 where
     C: Common,
-    R: OutputPin,
-    G: OutputPin,
-    B: OutputPin,
+    R: OutputPin<Error = E>,
+    G: OutputPin<Error = E>,
+    B: OutputPin<Error = E>,
 {
     type Input = Color;
 
     /// Sets the RGB LED to the specified color.
     fn set(&mut self, color: Color) {
-        match color {
-            Color::Red => {
-                C::enable(&mut self.red);
-                C::disable(&mut self.green);
-                C::disable(&mut self.blue);
-            }
-            Color::Green => {
-                C::disable(&mut self.red);
-                C::enable(&mut self.green);
-                C::disable(&mut self.blue);
-            }
-            Color::Blue => {
-                C::disable(&mut self.red);
-                C::disable(&mut self.green);
-                C::enable(&mut self.blue);
-            }
-            Color::Yellow => {
-                C::enable(&mut self.red);
-                C::enable(&mut self.green);
-                C::disable(&mut self.blue);
-            }
-            Color::Cyan => {
-                C::disable(&mut self.red);
-                C::enable(&mut self.green);
-                C::enable(&mut self.blue);
-            }
-            Color::Magenta => {
-                C::enable(&mut self.red);
-                C::disable(&mut self.green);
-                C::enable(&mut self.blue);
-            }
-            Color::White => {
-                C::enable(&mut self.red);
-                C::enable(&mut self.green);
-                C::enable(&mut self.blue);
-            }
-            Color::Black => {
-                C::disable(&mut self.red);
-                C::disable(&mut self.green);
-                C::disable(&mut self.blue);
-            }
-        }
+        let _ = self.set(color);
     }
 }
 
 /// The polarity of the LED; either anode or cathode.
 pub trait Common {
     /// Enables the pin output.
-    fn enable<P: OutputPin>(pin: &mut P);
+    fn enable<P: OutputPin>(pin: &mut P) -> Result<(), <P as OutputPin>::Error>;
 
     /// Disables the pin output.
-    fn disable<P: OutputPin>(pin: &mut P);
+    fn disable<P: OutputPin>(pin: &mut P) -> Result<(), <P as OutputPin>::Error>;
 }
 
 /// A marker type that represents a common anode connection.
@@ -228,13 +253,17 @@ pub trait Common {
 /// # Examples
 ///
 /// ```
-/// # use embedded_hal::digital::OutputPin;
+/// # use embedded_hal::digital::v2::OutputPin;
 /// #
 /// # struct Pin {}
 /// #
 /// # impl OutputPin for Pin {
-/// #     fn set_low(&mut self) {}
-/// #     fn set_high(&mut self) {}
+/// #     fn set_low(&mut self) -> Result<(), ()> {
+/// #         Ok(())
+/// #     }
+/// #     fn set_high(&mut self) -> Result<(), ()> {
+/// #         Ok(())
+/// #     }
 /// # }
 /// #
 /// # let r = Pin{};
@@ -254,13 +283,17 @@ pub struct CommonAnode {
 /// # Examples
 ///
 /// ```
-/// # use embedded_hal::digital::OutputPin;
+/// # use embedded_hal::digital::v2::OutputPin;
 /// #
 /// # struct Pin {}
 /// #
 /// # impl OutputPin for Pin {
-/// #     fn set_low(&mut self) {}
-/// #     fn set_high(&mut self) {}
+/// #     fn set_low(&mut self) -> Result<(), ()> {
+/// #         Ok(())
+/// #     }
+/// #     fn set_high(&mut self) -> Result<(), ()> {
+/// #         Ok(())
+/// #     }
 /// # }
 /// #
 /// # let r = Pin{};
@@ -276,21 +309,21 @@ pub struct CommonCathode {
 }
 
 impl Common for CommonAnode {
-    fn enable<P: OutputPin>(pin: &mut P) {
-        pin.set_low();
+    fn enable<P: OutputPin>(pin: &mut P) -> Result<(), <P as OutputPin>::Error> {
+        pin.set_low()
     }
 
-    fn disable<P: OutputPin>(pin: &mut P) {
-        pin.set_high();
+    fn disable<P: OutputPin>(pin: &mut P) -> Result<(), <P as OutputPin>::Error> {
+        pin.set_high()
     }
 }
 
 impl Common for CommonCathode {
-    fn enable<P: OutputPin>(pin: &mut P) {
-        pin.set_high();
+    fn enable<P: OutputPin>(pin: &mut P) -> Result<(), <P as OutputPin>::Error> {
+        pin.set_high()
     }
 
-    fn disable<P: OutputPin>(pin: &mut P) {
-        pin.set_low();
+    fn disable<P: OutputPin>(pin: &mut P) -> Result<(), <P as OutputPin>::Error> {
+        pin.set_low()
     }
 }
