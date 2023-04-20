@@ -75,6 +75,7 @@ use embedded_hal::digital::OutputPin;
 
 /// The set of primary colors and secondary colors that can be created by an RGB LED along with
 /// black and white.
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Color {
     Red,
     Green,
