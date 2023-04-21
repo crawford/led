@@ -176,7 +176,7 @@ where
     }
 
     /// Sets the RGB LED to the specified color.
-    fn set(&mut self, color: Color) -> Result<(), <R as OutputPin>::Error> {
+    pub fn set(&mut self, color: Color) -> Result<(), <R as OutputPin>::Error> {
         match color {
             Color::Red => {
                 C::enable(&mut self.red)?;

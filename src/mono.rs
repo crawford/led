@@ -150,7 +150,7 @@ where
     }
 
     /// Sets the RGB LED to the specified color.
-    fn set(&mut self, state: State) {
+    pub fn set(&mut self, state: State) {
         let _ = match state {
             State::Off => C::disable(&mut self.pin),
             State::On => C::enable(&mut self.pin),
